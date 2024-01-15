@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 
 import CanvasLivePreview from "./CanvasPreview";
@@ -20,14 +20,23 @@ export default function CanvasBase() {
   const [canvasElem, setCanvasElem] = useState();
   const [canvasStr, setCanvasStr] = useState("");
   const [uploadedLogo, setuploadedLogo] = useState();
+  const [variants, setVariants] = useState({});
 
   const onImgUpload = (file) => {
     setuploadedLogo(file);
   };
 
+  const onClickVariant = (type, value) => {
+    setVariants((currState) => {
+      return {
+        ...currState,
+        [type]: value,
+      };
+    });
+  };
+
   useEffect(() => {
     const canvasContainer = new fabric.Canvas(canvasRef.current, {
-      // backgroundColor: "orange",
       width: 600,
       height: 600,
     });
@@ -42,18 +51,6 @@ export default function CanvasBase() {
         lockMovementY: true,
         lockOrientation: true,
         evented: false,
-        // fill: "orange",
-        // clipPath: new fabric.Rect({
-        //   top: paTop,
-        //   left: paLeft,
-        //   height: paHeight,
-        //   width: paWidth,
-        //   fill: "transparent",
-        //   selectable: false,
-        //   hasControls: false,
-        //   hasBorders: false,
-        //   evented: false,
-        // })
       });
 
       let rectBox = new fabric.Rect({
@@ -99,10 +96,6 @@ export default function CanvasBase() {
     }
   }, [uploadedLogo]);
 
-  // useEffect(() => {
-  //   setCanvasStr(JSON.stringify(canvasElem));
-  // }, [canvasElem]);
-
   const deleteCurrentImg = () => {
     // to delete a currently active image
   };
@@ -111,7 +104,9 @@ export default function CanvasBase() {
     <>
       <div className="row mb-5">
         <div className="col-md-6">
-          <canvas ref={canvasRef} width={600} height={700} className="" />
+          <div className="canvas-wrapper position-relative">
+            <canvas ref={canvasRef} width={600} height={700} className="" />
+          </div>
           <div className="d-flex justify-content-center mt-3 px-4">
             <ImgUploader onUpload={onImgUpload} className="mx-3" />
             <button
@@ -123,20 +118,36 @@ export default function CanvasBase() {
           </div>
         </div>
         <div className="col-md-6">
-          {canvasElem && <CanvasLivePreview canvasStr={canvasStr} />}
+          {canvasElem && (
+            <CanvasLivePreview
+              canvasStr={canvasStr}
+              baseImg={baseImg}
+              variants={variants}
+            />
+          )}
           <div className="d-flex justify-content-center">
             {["orange", "pink", "grey"].map((color) => (
-              <a key={color} role="button" onClick={() => ""}>
-                <div
+              <Fragment key={color}>
+                <label
+                  role="button"
+                  htmlFor={`variantInput-${color}`}
                   style={{
                     background: color,
                     height: "20px",
                     width: "20px",
                     borderRadius: "5px",
                   }}
-                  className="mx-2"
+                  className="mx-2 "
                 />
-              </a>
+                <input
+                  type="radio"
+                  key={color}
+                  id={`variantInput-${color}`}
+                  checked={variants.color === color}
+                  className="d-none"
+                  onChange={() => onClickVariant("color", color)}
+                />
+              </Fragment>
             ))}
           </div>
         </div>
